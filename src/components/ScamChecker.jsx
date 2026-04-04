@@ -19,7 +19,7 @@ const ScamChecker = (props) => {
     setAlert({ show: true, message, type });
   };
 
-  // 🔥 LOCAL ANALYSIS
+  // LOCAL ANALYSIS
   const analyzeLocally = (text) => {
     let score = 0;
     let flags = [];
@@ -57,7 +57,7 @@ const ScamChecker = (props) => {
     return { score, flags };
   };
 
-  // 🚀 MAIN CHECK
+  // MAIN CHECK
   const handleCheck = async () => {
     if (activeTab === "Image" && !imageFile) {
       showAlert("Please upload an image", "error");
@@ -91,7 +91,7 @@ const ScamChecker = (props) => {
       let verdict = "Safe";
       let explanation = aiText;
 
-      // ✅ TRY JSON PARSE FIRST
+      // TRY JSON PARSE FIRST
       try {
         const parsed = JSON.parse(aiText);
         verdict = parsed.verdict;
@@ -125,7 +125,7 @@ const ScamChecker = (props) => {
     }
   };
 
-  // 🚨 REPORT FUNCTION (LOCAL STORAGE)
+  // REPORT FUNCTION (LOCAL STORAGE)
   const reportScam = (result) => {
     try {
       const existingReports =
@@ -151,11 +151,11 @@ const ScamChecker = (props) => {
 
       localStorage.setItem("reportedScams", JSON.stringify(existingReports));
 
-      showAlert("Reported successfully 🚨", "success");
+      showAlert("Reported successfully", "success");
 
     } catch (err) {
       console.error(err);
-      showAlert("Report failed ❌", "error");
+      showAlert("Report failed", "error");
     }
   };
 
