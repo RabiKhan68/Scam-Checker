@@ -26,9 +26,16 @@ Analyze the following ${type} and determine if it is a scam.
 Input:
 "${input}"
 
-Respond in this format:
-Verdict: (Scam / Suspicious / Safe)
-Reason: (short explanation)
+STRICT RULES:
+- If it includes prizes, urgency, links, or requests personal info → mark as Scam
+- DO NOT be unsure
+
+Respond ONLY in JSON format like this:
+
+{
+  "verdict": "Scam | Suspicious | Safe",
+  "reason": "short explanation"
+}
 `;
 
     const result = await model.generateContent(prompt);

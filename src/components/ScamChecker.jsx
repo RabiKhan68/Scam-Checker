@@ -19,14 +19,14 @@ const ScamChecker = (props) => {
     setAlert({ show: true, message, type });
   };
 
-  // YOUR LOCAL AI LOGIC
+  // 🔥 LOCAL ANALYSIS
   const analyzeLocally = (text) => {
     let score = 0;
     let flags = [];
 
     const lower = text.toLowerCase();
 
-    if (lower.includes("urgent")) {
+    if (lower.includes("urgent") || lower.includes("hurry")) {
       score += 25;
       flags.push("Uses urgent language");
     }
@@ -36,20 +36,28 @@ const ScamChecker = (props) => {
       flags.push("Too good to be true offer");
     }
 
-    if (lower.includes("otp") || lower.includes("password")) {
+    if (
+      lower.includes("otp") ||
+      lower.includes("password") ||
+      lower.includes("bank")
+    ) {
       score += 30;
       flags.push("Requests sensitive information");
     }
 
-    if (lower.includes("click") || lower.includes("link")) {
+    if (
+      lower.includes("click") ||
+      lower.includes("link") ||
+      lower.includes("http")
+    ) {
       score += 20;
-      flags.push("Contains suspicious link request");
+      flags.push("Contains suspicious link");
     }
 
     return { score, flags };
   };
 
-  // MAIN CHECK FUNCTION
+  // 🚀 MAIN CHECK
   const handleCheck = async () => {
     if (activeTab === "Image" && !imageFile) {
       showAlert("Please upload an image", "error");
@@ -63,7 +71,7 @@ const ScamChecker = (props) => {
 
     showAlert("Analyzing...", "warning");
 
-    const local = analyzeLocally(inputValue);
+    const local = analyzeLocally(inputValue || "");
 
     try {
       const res = await fetch("/api/check-scam", {
@@ -81,9 +89,23 @@ const ScamChecker = (props) => {
       const aiText = data.result || "";
 
       let verdict = "Safe";
+      let explanation = aiText;
 
-      if (aiText.toLowerCase().includes("scam")) verdict = "Scam";
-      else if (aiText.toLowerCase().includes("suspicious"))
+      // ✅ TRY JSON PARSE FIRST
+      try {
+        const parsed = JSON.parse(aiText);
+        verdict = parsed.verdict;
+        explanation = parsed.reason;
+      } catch {
+        // fallback
+        if (aiText.toLowerCase().includes("scam")) verdict = "Scam";
+        else if (aiText.toLowerCase().includes("suspicious"))
+          verdict = "Suspicious";
+      }
+
+      // 🔥 OVERRIDE LOGIC (VERY IMPORTANT)
+      if (local.score >= 60) verdict = "Scam";
+      else if (local.score >= 40 && verdict !== "Scam")
         verdict = "Suspicious";
 
       const finalScore = Math.min(100, local.score + 40);
@@ -91,7 +113,7 @@ const ScamChecker = (props) => {
       setResult({
         verdict,
         score: finalScore,
-        explanation: aiText,
+        explanation,
         flags: local.flags,
       });
 
@@ -103,45 +125,44 @@ const ScamChecker = (props) => {
     }
   };
 
+  // 🚨 REPORT FUNCTION (LOCAL STORAGE)
   const reportScam = (result) => {
-  try {
-    const existingReports =
-      JSON.parse(localStorage.getItem("reportedScams")) || [];
+    try {
+      const existingReports =
+        JSON.parse(localStorage.getItem("reportedScams")) || [];
 
-    const alreadyExists = existingReports.some(
-      (r) => r.input === inputValue
-    );
+      const existingIndex = existingReports.findIndex(
+        (r) => r.input === inputValue
+      );
 
-    if (alreadyExists) {
-      showAlert("Already reported!", "warning");
-      return;
+      if (existingIndex !== -1) {
+        existingReports[existingIndex].reports += 1;
+      } else {
+        existingReports.push({
+          id: Date.now(),
+          input: inputValue,
+          type: activeTab,
+          verdict: result.verdict,
+          explanation: result.explanation,
+          reports: 1,
+          date: new Date().toISOString(),
+        });
+      }
+
+      localStorage.setItem("reportedScams", JSON.stringify(existingReports));
+
+      showAlert("Reported successfully 🚨", "success");
+
+    } catch (err) {
+      console.error(err);
+      showAlert("Report failed ❌", "error");
     }
-
-    const newReport = {
-      id: Date.now(),
-      input: inputValue,
-      type: activeTab,
-      verdict: result.verdict,
-      explanation: result.explanation,
-      date: new Date().toISOString(),
-    };
-
-    existingReports.push(newReport);
-
-    localStorage.setItem("reportedScams", JSON.stringify(existingReports));
-
-    showAlert("Reported successfully!", "success");
-
-  } catch (err) {
-    console.error(err);
-    showAlert("Report failed!", "error");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-600 flex flex-col md:flex-row items-center justify-between px-8 py-16 gap-8">
 
-      {/* LEFT SIDE */}
+      {/* LEFT */}
       <div className="flex-1">
         <h1 className="text-4xl font-bold mb-4">
           <span className="text-white">{props.description}</span> <br />
@@ -152,7 +173,6 @@ const ScamChecker = (props) => {
           Free, straightforward scam checking in seconds.
         </p>
 
-        {/* FORM */}
         <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
 
           {/* TABS */}
@@ -169,6 +189,7 @@ const ScamChecker = (props) => {
                   setActiveTab(tab);
                   setInputValue("");
                   setImageFile(null);
+                  setResult(null);
                 }}
               >
                 {tab}
@@ -176,7 +197,7 @@ const ScamChecker = (props) => {
             ))}
           </div>
 
-          {/* INPUT AREA */}
+          {/* INPUT */}
           <div
             className="border-2 border-dashed border-gray-200 rounded-lg p-12 flex flex-col items-center justify-center text-gray-400 mb-4 cursor-pointer hover:bg-gray-100"
             onClick={() => {
@@ -189,10 +210,7 @@ const ScamChecker = (props) => {
 
             {activeTab === "Image" && (
               <>
-                <p>
-                  Drag and drop your images here <br />
-                  or click to browse
-                </p>
+                <p>Drag & drop image or click</p>
                 {imageFile && (
                   <p className="text-green-500 mt-2 text-sm">
                     {imageFile.name}
@@ -213,7 +231,7 @@ const ScamChecker = (props) => {
 
             {activeTab === "Text" && (
               <textarea
-                placeholder="Paste the text here..."
+                placeholder="Paste text..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 rows={4}
@@ -232,7 +250,6 @@ const ScamChecker = (props) => {
             )}
           </div>
 
-          {/* FILE INPUT */}
           <input
             id="fileInput"
             type="file"
@@ -241,7 +258,6 @@ const ScamChecker = (props) => {
             onChange={(e) => setImageFile(e.target.files[0])}
           />
 
-          {/* BUTTON */}
           <button
             onClick={handleCheck}
             className="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-700 transition"
@@ -250,15 +266,17 @@ const ScamChecker = (props) => {
           </button>
         </div>
 
-        {/* RESULT UI */}
-        <ScamResult result={result} onReport={reportScam} />
+        {/* RESULT */}
+        {result && (
+          <ScamResult result={result} onReport={reportScam} />
+        )}
       </div>
 
-      {/* RIGHT SIDE */}
+      {/* RIGHT */}
       <div className="flex-1 hidden md:flex justify-center">
         <img
           src="/confused_man.jpg"
-          alt="Scam Illustration"
+          alt="Scam"
           className="mt-10 w-[350px] h-[450px] object-cover rounded-lg shadow-lg"
         />
       </div>
