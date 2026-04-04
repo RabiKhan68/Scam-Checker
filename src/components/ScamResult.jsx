@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function ScamResult({ result }) {
+export default function ScamResult({ result, onReport }) {
   if (!result) return null;
 
   return (
@@ -38,6 +38,7 @@ export default function ScamResult({ result }) {
             <li key={i}>{flag}</li>
           ))}
         </ul>
+        <button onClick={() => onReport(result)} className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition">Report as a Scam</button>
       </div>
 
     </div>

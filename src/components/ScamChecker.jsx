@@ -103,6 +103,42 @@ const ScamChecker = (props) => {
     }
   };
 
+  const reportScam = (result) => {
+  try {
+    const existingReports =
+      JSON.parse(localStorage.getItem("reportedScams")) || [];
+
+    // 🔥 Prevent duplicates
+    const alreadyExists = existingReports.some(
+      (r) => r.input === inputValue
+    );
+
+    if (alreadyExists) {
+      showAlert("Already reported!", "warning");
+      return;
+    }
+
+    const newReport = {
+      id: Date.now(),
+      input: inputValue,
+      type: activeTab,
+      verdict: result.verdict, // ✅ FIXED (you used explanation before ❌)
+      explanation: result.explanation,
+      date: new Date().toISOString(),
+    };
+
+    existingReports.push(newReport);
+
+    localStorage.setItem("reportedScams", JSON.stringify(existingReports));
+
+    showAlert("Reported successfully!", "success");
+
+  } catch (err) {
+    console.error(err);
+    showAlert("Report failed!", "error");
+  }
+};
+
   return (
     <div className="min-h-screen bg-gray-600 flex flex-col md:flex-row items-center justify-between px-8 py-16 gap-8">
 
@@ -216,7 +252,7 @@ const ScamChecker = (props) => {
         </div>
 
         {/* RESULT UI */}
-        <ScamResult result={result} />
+        <ScamResult result={result} onReport={reportScam} />
       </div>
 
       {/* RIGHT SIDE */}
