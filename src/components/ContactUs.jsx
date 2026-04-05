@@ -50,7 +50,7 @@ export default function Contact() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4" action={"mailto:rabibro063@gmail.com"} method="POST">
+        <form onSubmit={handleSubmit} className="space-y-4" action={"mailto:rabibro063@gmail.com"} method="GET" encType="text/plain">
 
           {/* NAME */}
           <div>
