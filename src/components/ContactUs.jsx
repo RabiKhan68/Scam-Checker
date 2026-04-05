@@ -112,7 +112,7 @@ export default function Contact() {
 
         {/* EXTRA INFO */}
         <div className="mt-6 text-sm text-gray-500 text-center">
-          Or email us directly at <span className="text-blue-600">support@scampuncher.com</span>
+          Or email us directly at <a><span className="text-blue-600">support@scampuncher.com</span></a>
         </div>
 
       </div>
