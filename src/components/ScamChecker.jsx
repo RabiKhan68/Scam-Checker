@@ -74,7 +74,7 @@ const ScamChecker = (props) => {
     const local = analyzeLocally(inputValue || "");
 
     try {
-      const res = await fetch("https://mzscdlfw7e.execute-api.us-east-1.amazonaws.com/scams", {
+      const res = await fetch("https://mzscdlfw7e.execute-api.us-east-1.amazonaws.com/check-scam", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
